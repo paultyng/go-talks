@@ -8,9 +8,14 @@ Software Engineering Manager, Under Armour
 ptyng@underarmour.com
 @ptyng
 
+Sayan Chaki
+B2B Engineering Team Lead, Under Armour
+schaki@underarmour.com
+@chakisayan
+
 * Quick Overview
 
-Go testing is built-in
+Go testing is built in
 
 `testing` package and `go` `test` command
 
@@ -36,6 +41,7 @@ Go testing is built-in
 - ie. application code and data persistence (database, queue, etc.)
 
 : everyone defines differently, like devops
+: add image for our integration test framework
 
 * Run different sets of tests for different situations
 
@@ -51,6 +57,8 @@ Can be used in testing, but also building / running:
 
   $ go test -tags integration
   $ go build -tags integration
+
+: go tries to use the same build flags for their standard library tools
 
 * Short flag
 
@@ -109,6 +117,7 @@ We've been stung by this but the flag found it:
 .link https://github.com/labstack/echo/pull/968
 
 : race in Echo with JWT deserialization, the built in Go race detection found it
+: trust the race detector!
 
 * Preventing races with parallel tests
 
