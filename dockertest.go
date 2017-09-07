@@ -34,7 +34,7 @@ func main() {
 		// startslide3 OMIT
 		db, err = sql.Open(
 			"mysql",
-			fmt.Sprintf("root:secret@(localhost:%s)/mysql", resource.GetPort("3306/tcp")),
+			fmt.Sprintf("root:secret@(localhost:%s)/mysql", resource.GetPort("3306/tcp")), // HL
 		)
 		// endslide3 OMIT
 		if err != nil {
