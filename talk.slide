@@ -15,7 +15,7 @@ schaki@underarmour.com
 
 * Quick Overview
 
-Go testing is built in
+Go testing is built-in
 
 `testing` package and `go` `test` command
 
@@ -116,7 +116,7 @@ We've been stung by this but the flag found it:
 
 .link https://github.com/labstack/echo/pull/968
 
-: race in Echo with JWT deserialization, the built in Go race detection found it
+: race in Echo with JWT deserialization, the built-in Go race detection found it
 : trust the race detector!
 
 * Preventing races with parallel tests
