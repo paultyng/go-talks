@@ -22,7 +22,7 @@ func main() {
 	// pulls an image, creates a container based on it and runs it
 	resource, err := pool.Run("mysql", "5.7", []string{"MYSQL_ROOT_PASSWORD=secret"}) // HL
 	if err != nil {
-		log.Fatalf("Could not start resource: %// startslide1 OMITs", err)
+		log.Fatalf("Could not start resource: %s", err)
 	}
 	// endslide1 OMIT
 

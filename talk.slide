@@ -8,11 +8,6 @@ Software Engineering Manager, Under Armour
 ptyng@underarmour.com
 @ptyng
 
-Sayan Chaki
-B2B Engineering Team Lead, Under Armour
-schaki@underarmour.com
-@chakisayan
-
 * Quick Overview
 
 Go testing is built-in
@@ -41,10 +36,12 @@ Go testing is built-in
 - ie. application code and data persistence (database, queue, etc.)
 
 : everyone defines differently, like devops
-: add image for our integration test framework
+: for purposes of this discussion, these are the guiding tenets
 
 * Run different sets of tests for different situations
 
+: we introducing long running tests
+: need the ability to maybe not run them all the time
 : many different ways to run subsets of tests in go
 
 * Build flags
@@ -58,7 +55,9 @@ Can be used in testing, but also building / running:
   $ go test -tags integration
   $ go build -tags integration
 
-: go tries to use the same build flags for their standard library tools
+: conditional compilation
+: top of the file
+: most go tooling respects these options
 
 * Short flag
 
@@ -74,6 +73,8 @@ Use with `go` `test`:
 
 .code code_test.go /^func TestLongRunning/,/^}/
 
+: you have to markup all your long running tests explicitly
+
 * Regex name matching
 
   -run regexp
@@ -88,7 +89,9 @@ Use with `go` `test`:
 
 * Parallelization
 
+: another way to speed up integration testing
 : packages run in parallel by default
+: potentially introduces a whole new suite of errors as well!
 
 `t.Parallel()`
 
@@ -125,6 +128,15 @@ We've been stung by this but the flag found it:
 
 .play sync_once.go /startslide/,/endslide/
 
+* Testing a Web Application
+
+`httptest.Server`
+
+.play httptest_server.go /startslide/,/endslide/
+
+: serves your implementation of http.Handler
+: end to end http tests over local loopback interface
+
 * External Dependencies
 
 * dockertest package
@@ -151,7 +163,13 @@ Run your tests now against that db:
 
 .code dockertest.go /startslide3/,/endslide3/
 
-.code dockertest.go /startslide4/,/endslide4/
+.play dockertest.go /startslide4/,/endslide4/
+
+* Tying it All Together
+
+dockertest + httptest.Server = ❤️
+
+.play debug/alltogether.go /startslide/,/endslide/
 
 * Debugging
 
