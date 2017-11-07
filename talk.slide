@@ -33,7 +33,7 @@ ptyng@underarmour.com
 
 : opentracing as its vendor neutral
 : spans have a name, start, stop
-: spans can have additional data associated with them, typically called labels or tags
+: spans can have additional data associated with them, typically called labels, tags, or annotations
 : pink is trace, yellow/green are spans
 
 * How does it work
@@ -81,5 +81,12 @@ Trace server aggregates it
 
 : Context! (see Johnny's talk)
 : traceClient is an instantiated stackdriver client for your gcloud project
+
+* Stackdriver UI
+
+.background stackdriver-analysis.png
+
+: comparison vs baseline
+: bucketing of percentiles
 
 * Demo / Questions!
