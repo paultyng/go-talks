@@ -1,12 +1,15 @@
 package main
 
 import (
+	"log"
 	"net/http"
-	"os"
+	"net/http/httputil"
 )
 
 func newRequestLoggingHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Write(os.Stdout)
+		data, _ := httputil.DumpRequest(r, false)
+		log.Println(string(data))
+		next.ServeHTTP(w, r)
 	})
 }
