@@ -1,0 +1,85 @@
+Distributed Tracing
+with Stackdriver
+3 Oct 2017
+Tags: go, tracing, stackdriver, gcloud
+
+Paul Tyng
+Software Engineering Manager, Under Armour
+ptyng@underarmour.com
+@ptyng
+
+* Why distributed tracing?
+
+: Most of have distributed systems
+: microservices/SOA is hot right now, monoliths easy to diagnose
+: UA -> ingress, web server (ssr), api, service, persistence
+: follow a call through all the layers?
+: for a given page, how do you find the bottleneck?
+
+* What solutions exist?
+
+.link https://research.google.com/pubs/pub36356.html Dapper paper by Google
+.link http://opentracing.io/ OpenTracing (vendor-neutral standard for tracing)
+.link http://zipkin.io/ Zipkin (based on Dapper paper)
+.link https://github.com/jaegertracing/jaeger Jaeger, by Uber (inspired by Dapper / Open Zipkin)
+.link https://cloud.google.com/trace/ Stackdriver Trace (Google Cloud)
+
+* Terminology
+
+*Trace*: directed acyclic graph of *Spans*
+*Span*: individual timed elements of a trace
+
+.image trace-span.png
+
+: opentracing as its vendor neutral
+: spans have a name, start, stop
+: spans can have additional data associated with them, typically called labels or tags
+: pink is trace, yellow/green are spans
+
+* How does it work
+
+Propagate data between services 
+
+- HTTP header
+  X-Cloud-Trace-Context: 013ea347096972798262b0310f349ad6/418508137924269037;o=1
+- GRPC metadata
+
+Each service uploads its data
+
+Trace server aggregates it
+
+* How does it work in Go (Stackdriver)?
+
+*context.Context*
+
+  if parentSpan := trace.FromContext(ctx); parentSpan != nil {
+    childSpan := parentSpan.NewChild(name)
+    defer childSpan.Finish()
+  }
+
+* How does it work in Go (Stackdriver)?
+
+*http.Server*
+
+  traceClient.HTTPHandler(myHandler)
+
+*http.Client*
+
+  client := http.Client{
+    Transport: &trace.Transport{},
+  }
+
+* How does it work in Go (Stackdriver)?
+
+*grpc.Server*
+
+  grpc.NewServer(grpc.UnaryInterceptor(tc.GRPCServerInterceptor()))
+
+*grpc.Client*
+
+  grpc.Dial(addr.String(), grpc.WithUnaryInterceptor(traceClient.GRPCClientInterceptor()))
+
+: Context! (see Johnny's talk)
+: traceClient is an instantiated stackdriver client for your gcloud project
+
+* Demo / Questions!

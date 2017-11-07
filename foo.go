@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -28,18 +27,22 @@ func serveFoo(tcli *trace.Client) error {
 
 		g.Go(func() error {
 			// some long running task
-			doTracedWork(ctx, 5)
+			doTracedWork(ctx, "child1", 1, func(ctx context.Context) {
+				doTracedWork(ctx, "child2", 2, func(ctx context.Context) {
+					doTracedWork(ctx, "child3", 1, nil)
+				})
+			})
 			return nil
 		})
 
 		g.Go(func() error {
-			barClient := http.Client{
-				Transport: &trace.Transport{},
+			client := http.Client{
+				Transport: &trace.Transport{}, // HL
 			}
 			req, _ := http.NewRequest("GET", fmt.Sprintf("http://localhost:%d", barPort), nil)
 			req = req.WithContext(ctx)
 
-			_, err := barClient.Do(req)
+			_, err := client.Do(req)
 
 			return err
 		})
@@ -51,17 +54,4 @@ func serveFoo(tcli *trace.Client) error {
 	})
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", fooPort), tcli.HTTPHandler(handler))
-}
-
-func doTracedWork(ctx context.Context, seconds int) {
-	if parentSpan := trace.FromContext(ctx); parentSpan != nil {
-		childSpan := parentSpan.NewChild("doSomeLongRunningThing")
-		defer childSpan.Finish()
-	}
-
-	doWork(seconds)
-}
-
-func doWork(seconds int) {
-	time.Sleep(time.Duration(seconds) * time.Second)
 }

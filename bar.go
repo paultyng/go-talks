@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"cloud.google.com/go/trace"
 	"github.com/ExpansiveWorlds/instrumentedsql"
@@ -22,6 +24,8 @@ func serveBar(tcli *trace.Client) error {
 		return err
 	}
 
+	time.Now().UnixNano()
+
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("handling bar request")
 
@@ -30,14 +34,15 @@ func serveBar(tcli *trace.Client) error {
 		//prep work
 		doWork(1)
 
-		_, err := db.ExecContext(ctx, "select pg_sleep(2)")
+		sleep := (1000.0 + float32(rand.Int31n(2000))) / 1000.0
+		_, err := db.ExecContext(ctx, "select pg_sleep($1)", sleep)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		//process query results
-		doWork(4)
+		doWork(2)
 	})
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", barPort), tcli.HTTPHandler(handler))
+	return http.ListenAndServe(fmt.Sprintf(":%d", barPort), newRequestLoggingHandler(tcli.HTTPHandler(handler)))
 }
