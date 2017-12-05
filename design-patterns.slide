@@ -124,7 +124,6 @@ on a `sql.DB`, the `Query` method returns `sql.Rows`
 	fmt.Print(buf1.String())
 	fmt.Print(buf2.String())
 
-
 : sometimes coupled with behavioral chain of responsibility for middleware
 
 * decorator - http.Handler
