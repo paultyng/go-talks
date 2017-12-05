@@ -14,7 +14,7 @@ Go testing is built-in
 
 `testing` package and `go` `test` command
 
-.code code_test.go /^func TestStringIndex/,/^}/
+.code integration-testing/code_test.go /^func TestStringIndex/,/^}/
 
   $ go test
   --- FAIL: TestStringIndex (0.00s)
@@ -48,7 +48,7 @@ Go testing is built-in
 
 At the file level:
 
-.code tags.go /^\/\//
+.code integration-testing/tags.go /^\/\//
 
 Can be used in testing, but also building / running:
 
@@ -71,7 +71,7 @@ Use with `go` `test`:
 
   $ go test -short
 
-.code code_test.go /^func TestLongRunning/,/^}/
+.code integration-testing/code_test.go /^func TestLongRunning/,/^}/
 
 : you have to markup all your long running tests explicitly
 
@@ -126,13 +126,13 @@ We've been stung by this but the flag found it:
 
 `sync.Once`
 
-.play sync_once.go /startslide/,/endslide/
+.play integration-testing/sync_once.go /startslide/,/endslide/
 
 * Testing a Web Application
 
 `httptest.Server`
 
-.play httptest_server.go /startslide/,/endslide/
+.play integration-testing/httptest_server.go /startslide/,/endslide/
 
 : serves your implementation of http.Handler
 : end to end http tests over local loopback interface
@@ -145,7 +145,7 @@ We've been stung by this but the flag found it:
 
 Setup a pool, start `mysql:5.7`:
 
-.code dockertest.go /startslide1/,/endslide1/
+.code integration-testing/dockertest.go /startslide1/,/endslide1/
 
 : `latest` vs version locking
 
@@ -153,7 +153,7 @@ Setup a pool, start `mysql:5.7`:
 
 Backoff / health checks: 
 
-.code dockertest.go /startslide2/,/endslide2/
+.code integration-testing/dockertest.go /startslide2/,/endslide2/
 
 : similar to ua-ci, but usable via native go tooling
 
@@ -161,15 +161,15 @@ Backoff / health checks:
 
 Run your tests now against that db:
 
-.code dockertest.go /startslide3/,/endslide3/
+.code integration-testing/dockertest.go /startslide3/,/endslide3/
 
-.play dockertest.go /startslide4/,/endslide4/
+.play integration-testing/dockertest.go /startslide4/,/endslide4/
 
 * Tying it All Together
 
 dockertest + httptest.Server = ❤️
 
-.play debug/alltogether.go /startslide/,/endslide/
+.play integration-testing/debug/alltogether.go /startslide/,/endslide/
 
 * Debugging
 
