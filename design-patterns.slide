@@ -1,0 +1,157 @@
+Design Patterns with Go
+5 Dec 2017
+Tags: go, design patterns
+
+Paul Tyng
+Engineering Manager, Hashicorp
+paul@paultyng.net
+@ptyng
+
+* Design Patterns?
+
+: we are working on solved problems
+: software ideas are abstract, and we need a common vocabulary
+: design patterns are just reusable templates, broad strokes
+: everybody loves "best practices"
+
+* "Gang of Four"
+
+.image design-patterns/gof.jpg 500 _
+
+: how many have read? show of hands?
+: 1994
+: 23 OO patterns
+: if you want to look "serious"
+: Erich Gamma - JUnit, Java in Eclipse, Monaco (vscode)
+
+* Types of Patterns
+
+- Creational
+: creational (instantiation of objects): factory, builder, singleton
+- Structural
+: structural (composition of objects): decorator (middleware)
+- Behavioral
+: behavioral (communication between objects): iterator, observer, visitor
+
+* singleton
+
+: creational
+
+net/http package has `http.DefaultClient`
+
+  // DefaultClient is the default Client and is used by Get, Head, and Post.
+  var DefaultClient = &Client{}
+
+  func Get(url string) (resp *Response, err error) {
+  	return DefaultClient.Get(url)
+  }
+
+: only one value
+: sometimes a lazy implementation
+: a little problematic in go, as you traditionally hide the constructor
+
+* factory - usage
+
+: creational
+
+create database in the `sql` package
+
+  func Open(driverName, dataSourceName string) (*DB, error)
+    ...
+    driveri, ok := drivers[driverName]
+  	if !ok {
+  		return nil, fmt.Errorf("sql: unknown driver %q (forgotten import?)", driverName)
+  	}
+    ...
+
+: kind of a singleton pattern as well for the named driver instance
+: typically solving the problem of not knowing your concretes up front
+
+* factory - registration
+
+New drivers are registered with the factory:
+
+  func Register(name string, driver driver.Driver)
+
+  // from github.com/lib/pq
+  sql.Register("postgres", &Driver{})
+  // from github.com/go-sql-driver/mysql
+  sql.Register("mysql", &MySQLDriver{})
+  // from github.com/mattn/go-sqlite3
+  sql.Register("sqlite3", &SQLiteDriver{})
+
+: _ in import 
+: import just for side effects of the register in init
+
+* iterator
+
+: behavioral
+
+on a `sql.DB`, the `Query` method returns `sql.Rows`
+
+  age := 27
+  rows, err := db.Query("SELECT name FROM users WHERE age=?", age)
+  defer rows.Close()
+  for rows.Next() {
+    var name string
+    if err := rows.Scan(&name); err != nil {
+      log.Fatal(err)
+    }
+    fmt.Printf("%s is %d\n", name, age)
+  }
+  
+: traditionally you would have a hasNext, but this is simpler
+: decouple loop from container / type
+: Next/Close are pretty generic here, could be an interface
+
+* decorator - io
+
+: structural
+
+`io.MultiWriter`
+
+: MultiWriter creates a writer that duplicates its writes to all the provided writers, similar to the Unix tee(1) command.
+
+  r := strings.NewReader("some io.Reader stream to be read\n")
+
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err := io.Copy(w, r); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(buf1.String())
+	fmt.Print(buf2.String())
+
+
+: sometimes coupled with behavioral chain of responsibility for middleware
+
+* decorator - http.Handler
+
+  type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+  }
+
+: standard handler in http
+
+  func StripPrefix(prefix string, h Handler) Handler
+
+: StripPrefix returns a handler that serves HTTP requests by removing the given prefix from the request URL's Path and invoking the handler h. StripPrefix handles a request for a path that doesn't begin with prefix by replying with an HTTP 404 not found error.
+
+    func TimeoutHandler(h Handler, dt time.Duration, msg string) Handler
+
+: TimeoutHandler returns a Handler that runs h with the given time limit.
+
+* Questions?
+
+GoF Book:
+.link https://en.wikipedia.org/wiki/Design_Patterns
+
+Additional Examples:
+.link https://github.com/svett/golang-design-patterns
+
+Standard Library:
+.link https://golang.org/pkg/net/http/
+.link https://golang.org/pkg/database/sql/
+.link https://golang.org/pkg/io/
