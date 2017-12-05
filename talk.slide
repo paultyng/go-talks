@@ -1,0 +1,181 @@
+Go Integration Testing
+With Docker
+6 Sep 2017
+Tags: go, testing, docker
+
+Paul Tyng
+Software Engineering Manager, Under Armour
+ptyng@underarmour.com
+@ptyng
+
+* Quick Overview
+
+Go testing is built-in
+
+`testing` package and `go` `test` command
+
+.code code_test.go /^func TestStringIndex/,/^}/
+
+  $ go test
+  --- FAIL: TestStringIndex (0.00s)
+  	code_test.go:12: Index("chicken","ken") = 4; want 5
+  FAIL
+  exit status 1
+  FAIL	github.com/paultyng/talk-go-integration-testing	0.001s
+
+: convention for naming files and functions
+: whitebox and blackbox testing
+: includes benchmarking and examples as well
+: coverage is also built-in (which applies to integration tests as well)
+: no need to use an external library, although we commonly do for assertions
+
+* What are Integration Tests?
+
+- Show how major parts of the system work together
+- Test communication paths between different pieces
+- ie. application code and data persistence (database, queue, etc.)
+
+: everyone defines differently, like devops
+: for purposes of this discussion, these are the guiding tenets
+
+* Run different sets of tests for different situations
+
+: we introducing long running tests
+: need the ability to maybe not run them all the time
+: many different ways to run subsets of tests in go
+
+* Build flags
+
+At the file level:
+
+.code tags.go /^\/\//
+
+Can be used in testing, but also building / running:
+
+  $ go test -tags integration
+  $ go build -tags integration
+
+: conditional compilation
+: top of the file
+: most go tooling respects these options
+
+* Short flag
+
+  -short
+    Tell long-running tests to shorten their run time.
+    It is off by default but set during all.bash so that installing
+    the Go tree can run a sanity check but not spend time running
+    exhaustive tests.
+
+Use with `go` `test`:
+
+  $ go test -short
+
+.code code_test.go /^func TestLongRunning/,/^}/
+
+: you have to markup all your long running tests explicitly
+
+* Regex name matching
+
+  -run regexp
+    Run only those tests and examples matching the regular expression.
+    For tests the regular expression is split into smaller ones by
+    top-level '/', where each must match the corresponding part of a
+    test's identifier.
+
+: used by tools like vim-go and vscode already
+
+  $ go test -run 'TestLongRunning'
+
+* Parallelization
+
+: another way to speed up integration testing
+: packages run in parallel by default
+: potentially introduces a whole new suite of errors as well!
+
+`t.Parallel()`
+
+* Race Detection
+
+  $ go test -race
+
+  948.28036ms
+  ==================
+  WARNING: DATA RACE
+  Read at 0x00c42000e028 by goroutine 7:
+    main.main.func1()
+        /home/paul/go/src/github.com/paultyng/talk-go-integration-testing/race.go:14 +0x17c
+
+  Previous write at 0x00c42000e028 by main goroutine:
+    main.main()
+      /home/paul/go/src/github.com/paultyng/talk-go-integration-testing/race.go:15 +0x168
+
+  Goroutine 7 (running) created at:
+    time.goFunc()
+        /usr/local/go/src/time/sleep.go:170 +0x51
+  Found 1 data race(s)
+
+We've been stung by this but the flag found it:
+
+.link https://github.com/labstack/echo/pull/968
+
+: race in Echo with JWT deserialization, the built-in Go race detection found it
+: trust the race detector!
+
+* Preventing races with parallel tests
+
+`sync.Once`
+
+.play sync_once.go /startslide/,/endslide/
+
+* Testing a Web Application
+
+`httptest.Server`
+
+.play httptest_server.go /startslide/,/endslide/
+
+: serves your implementation of http.Handler
+: end to end http tests over local loopback interface
+
+* External Dependencies
+
+* dockertest package
+
+.link https://github.com/ory/dockertest
+
+Setup a pool, start `mysql:5.7`:
+
+.code dockertest.go /startslide1/,/endslide1/
+
+: `latest` vs version locking
+
+* dockertest package
+
+Backoff / health checks: 
+
+.code dockertest.go /startslide2/,/endslide2/
+
+: similar to ua-ci, but usable via native go tooling
+
+* dockertest package
+
+Run your tests now against that db:
+
+.code dockertest.go /startslide3/,/endslide3/
+
+.play dockertest.go /startslide4/,/endslide4/
+
+* Tying it All Together
+
+dockertest + httptest.Server = ❤️
+
+.play debug/alltogether.go /startslide/,/endslide/
+
+* Debugging
+
+- vscode
+- delve
+
+: demo
+
+* Questions?
