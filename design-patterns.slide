@@ -43,7 +43,7 @@ net/http package has `http.DefaultClient`
   var DefaultClient = &Client{}
 
   func Get(url string) (resp *Response, err error) {
-  	return DefaultClient.Get(url)
+	return DefaultClient.Get(url)
   }
 
 : only one value
@@ -56,13 +56,13 @@ net/http package has `http.DefaultClient`
 
 create database in the `sql` package
 
-  func Open(driverName, dataSourceName string) (*DB, error)
-    ...
-    driveri, ok := drivers[driverName]
-  	if !ok {
-  		return nil, fmt.Errorf("sql: unknown driver %q (forgotten import?)", driverName)
-  	}
-    ...
+	func Open(driverName, dataSourceName string) (*DB, error)
+	...
+	driveri, ok := drivers[driverName]
+	if !ok {
+		return nil, fmt.Errorf("sql: unknown driver %q (forgotten import?)", driverName)
+	}
+	...
 
 : kind of a singleton pattern as well for the named driver instance
 : typically solving the problem of not knowing your concretes up front
@@ -149,6 +149,7 @@ GoF Book:
 
 Additional Examples:
 .link https://github.com/svett/golang-design-patterns
+.link http://tmrts.com/go-patterns/
 
 Standard Library:
 .link https://golang.org/pkg/net/http/
