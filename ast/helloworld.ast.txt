@@ -1,0 +1,127 @@
+     0  *ast.File {
+     1  .  Package: src.go:1:1
+     2  .  Name: *ast.Ident {
+     3  .  .  NamePos: src.go:1:9
+     4  .  .  Name: "main"
+     5  .  }
+     6  .  Decls: []ast.Decl (len = 2) {
+     7  .  .  0: *ast.GenDecl {
+     8  .  .  .  TokPos: src.go:3:1
+     9  .  .  .  Tok: import
+    10  .  .  .  Lparen: -
+    11  .  .  .  Specs: []ast.Spec (len = 1) {
+    12  .  .  .  .  0: *ast.ImportSpec {
+    13  .  .  .  .  .  Path: *ast.BasicLit {
+    14  .  .  .  .  .  .  ValuePos: src.go:3:8
+    15  .  .  .  .  .  .  Kind: STRING
+    16  .  .  .  .  .  .  Value: "\"os\""
+    17  .  .  .  .  .  }
+    18  .  .  .  .  .  EndPos: -
+    19  .  .  .  .  }
+    20  .  .  .  }
+    21  .  .  .  Rparen: -
+    22  .  .  }
+    23  .  .  1: *ast.FuncDecl {
+    24  .  .  .  Name: *ast.Ident {
+    25  .  .  .  .  NamePos: src.go:5:6
+    26  .  .  .  .  Name: "main"
+    27  .  .  .  .  Obj: *ast.Object {
+    28  .  .  .  .  .  Kind: func
+    29  .  .  .  .  .  Name: "main"
+    30  .  .  .  .  .  Decl: *(obj @ 23)
+    31  .  .  .  .  }
+    32  .  .  .  }
+    33  .  .  .  Type: *ast.FuncType {
+    34  .  .  .  .  Func: src.go:5:1
+    35  .  .  .  .  Params: *ast.FieldList {
+    36  .  .  .  .  .  Opening: src.go:5:10
+    37  .  .  .  .  .  Closing: src.go:5:11
+    38  .  .  .  .  }
+    39  .  .  .  }
+    40  .  .  .  Body: *ast.BlockStmt {
+    41  .  .  .  .  Lbrace: src.go:5:13
+    42  .  .  .  .  List: []ast.Stmt (len = 2) {
+    43  .  .  .  .  .  0: *ast.AssignStmt {
+    44  .  .  .  .  .  .  Lhs: []ast.Expr (len = 1) {
+    45  .  .  .  .  .  .  .  0: *ast.Ident {
+    46  .  .  .  .  .  .  .  .  NamePos: src.go:6:2
+    47  .  .  .  .  .  .  .  .  Name: "data"
+    48  .  .  .  .  .  .  .  .  Obj: *ast.Object {
+    49  .  .  .  .  .  .  .  .  .  Kind: var
+    50  .  .  .  .  .  .  .  .  .  Name: "data"
+    51  .  .  .  .  .  .  .  .  .  Decl: *(obj @ 43)
+    52  .  .  .  .  .  .  .  .  }
+    53  .  .  .  .  .  .  .  }
+    54  .  .  .  .  .  .  }
+    55  .  .  .  .  .  .  TokPos: src.go:6:7
+    56  .  .  .  .  .  .  Tok: :=
+    57  .  .  .  .  .  .  Rhs: []ast.Expr (len = 1) {
+    58  .  .  .  .  .  .  .  0: *ast.CallExpr {
+    59  .  .  .  .  .  .  .  .  Fun: *ast.ArrayType {
+    60  .  .  .  .  .  .  .  .  .  Lbrack: src.go:6:10
+    61  .  .  .  .  .  .  .  .  .  Elt: *ast.Ident {
+    62  .  .  .  .  .  .  .  .  .  .  NamePos: src.go:6:12
+    63  .  .  .  .  .  .  .  .  .  .  Name: "byte"
+    64  .  .  .  .  .  .  .  .  .  }
+    65  .  .  .  .  .  .  .  .  }
+    66  .  .  .  .  .  .  .  .  Lparen: src.go:6:16
+    67  .  .  .  .  .  .  .  .  Args: []ast.Expr (len = 1) {
+    68  .  .  .  .  .  .  .  .  .  0: *ast.BasicLit {
+    69  .  .  .  .  .  .  .  .  .  .  ValuePos: src.go:6:17
+    70  .  .  .  .  .  .  .  .  .  .  Kind: STRING
+    71  .  .  .  .  .  .  .  .  .  .  Value: "\"hello world\""
+    72  .  .  .  .  .  .  .  .  .  }
+    73  .  .  .  .  .  .  .  .  }
+    74  .  .  .  .  .  .  .  .  Ellipsis: -
+    75  .  .  .  .  .  .  .  .  Rparen: src.go:6:30
+    76  .  .  .  .  .  .  .  }
+    77  .  .  .  .  .  .  }
+    78  .  .  .  .  .  }
+    79  .  .  .  .  .  1: *ast.ExprStmt {
+    80  .  .  .  .  .  .  X: *ast.CallExpr {
+    81  .  .  .  .  .  .  .  Fun: *ast.SelectorExpr {
+    82  .  .  .  .  .  .  .  .  X: *ast.SelectorExpr {
+    83  .  .  .  .  .  .  .  .  .  X: *ast.Ident {
+    84  .  .  .  .  .  .  .  .  .  .  NamePos: src.go:7:2
+    85  .  .  .  .  .  .  .  .  .  .  Name: "os"
+    86  .  .  .  .  .  .  .  .  .  }
+    87  .  .  .  .  .  .  .  .  .  Sel: *ast.Ident {
+    88  .  .  .  .  .  .  .  .  .  .  NamePos: src.go:7:5
+    89  .  .  .  .  .  .  .  .  .  .  Name: "Stdout"
+    90  .  .  .  .  .  .  .  .  .  }
+    91  .  .  .  .  .  .  .  .  }
+    92  .  .  .  .  .  .  .  .  Sel: *ast.Ident {
+    93  .  .  .  .  .  .  .  .  .  NamePos: src.go:7:12
+    94  .  .  .  .  .  .  .  .  .  Name: "Write"
+    95  .  .  .  .  .  .  .  .  }
+    96  .  .  .  .  .  .  .  }
+    97  .  .  .  .  .  .  .  Lparen: src.go:7:17
+    98  .  .  .  .  .  .  .  Args: []ast.Expr (len = 1) {
+    99  .  .  .  .  .  .  .  .  0: *ast.Ident {
+   100  .  .  .  .  .  .  .  .  .  NamePos: src.go:7:18
+   101  .  .  .  .  .  .  .  .  .  Name: "data"
+   102  .  .  .  .  .  .  .  .  .  Obj: *(obj @ 48)
+   103  .  .  .  .  .  .  .  .  }
+   104  .  .  .  .  .  .  .  }
+   105  .  .  .  .  .  .  .  Ellipsis: -
+   106  .  .  .  .  .  .  .  Rparen: src.go:7:22
+   107  .  .  .  .  .  .  }
+   108  .  .  .  .  .  }
+   109  .  .  .  .  }
+   110  .  .  .  .  Rbrace: src.go:8:1
+   111  .  .  .  }
+   112  .  .  }
+   113  .  }
+   114  .  Scope: *ast.Scope {
+   115  .  .  Objects: map[string]*ast.Object (len = 1) {
+   116  .  .  .  "main": *(obj @ 27)
+   117  .  .  }
+   118  .  }
+   119  .  Imports: []*ast.ImportSpec (len = 1) {
+   120  .  .  0: *(obj @ 12)
+   121  .  }
+   122  .  Unresolved: []*ast.Ident (len = 2) {
+   123  .  .  0: *(obj @ 61)
+   124  .  .  1: *(obj @ 83)
+   125  .  }
+   126  }

@@ -1,0 +1,113 @@
+Go Static Analysis
+8 Mar 2018
+Tags: go, ast, ssa
+
+Paul Tyng
+Engineering Manager, HashiCorp
+paul@paultyng.net
+@ptyng
+
+* Definitions
+
+* What is Static Analysis?
+
+: Analysis of a program without any execution
+: source code or compiled versions
+: Tools like fmt, vet, fix, lint
+
+* Why?
+
+Programming Languages allow all sorts of things
+
+  func someErroringFunction() error { ... }
+
+  // hopefully this is safe?!?!
+  someErroringFunction()
+
+  // kinda works, but pretty harsh
+  if err := someErroringFunction(); err != nil {
+    panic("oh no!")
+  }
+
+  // yay!
+  if err := someErroringFunction(); err != nil {
+    return err
+  }
+
+: guide towards idiomatic programming
+: some tools even will automatically fix things (gofmt)
+
+* How does it work?
+
+Many different ways!
+
+- String parsing
+- AST
+- SSA 
+
+* What is an AST?
+
+: abstract syntax tree
+: programmatic representation of source code
+
+Given a simple program
+
+.play ast/helloworld.go
+
+How can we view the AST?
+
+* A simple program
+
+.code ast/astdump.go
+
+* Output
+
+.iframe ast/helloworld.ast.txt 500 700
+
+: That is A LOT
+: ALL of the source code
+: Very literal
+: but this "works", we could write a linter
+: but just imagine how much code and how many 
+: edge cases our linter will need to account for?
+
+* What about SSA?
+
+: static single assignment form
+: intermediate representation
+: every variable is assigned once, and defined before used
+: existing variables split in to versions
+
+* Another simple program
+
+.code ast/ssadump.go /^func main/,/^}/
+
+* Some simpler output
+
+.iframe ast/helloworld.ssa.txt 500 700
+
+Can you spot the missing Go idiom?
+
+* Writing an error checker
+
+.link https://github.com/kisielk/errcheck kisielk/errcheck (AST)
+.link https://github.com/dominikh/go-tools dominikh/go-tools (SSA)
+
+Included in:
+
+.link https://github.com/alecthomas/gometalinter alecthomas/gometalinter
+
+.image ast/gometalinter.png 350 _
+
+* How is it done?
+
+.iframe ast/kisielk-errcheck.go.txt 500 900
+
+: no thanks!
+
+* What about SSA?
+
+.play ast/ssaerrcheck.go /start-errcheck/,/end-errcheck/
+
+* Questions?
+
