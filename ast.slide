@@ -11,9 +11,11 @@ paul@paultyng.net
 
 * What is Static Analysis?
 
-: Analysis of a program without any execution
+: Analysis of a program without any execution (very important, discuss module registries, untrusted code, etc)
 : source code or compiled versions
+: The term lint from 1978 Unix tool at Bell Labs by Stephen Johnson (where Ken Thompson and Rob Pike were)
 : Tools like fmt, vet, fix, lint
+: Other languages: StyleCop/FxCop for .NET C#, PHPStan, checkstyle for java
 
 * Why?
 
@@ -35,6 +37,7 @@ Programming Languages allow all sorts of things
   }
 
 : guide towards idiomatic programming
+: catch bugs earlier, prevent security holes (math/rand vs crypto/rand)
 : some tools even will automatically fix things (gofmt)
 
 * How does it work?
@@ -42,13 +45,18 @@ Programming Languages allow all sorts of things
 Many different ways!
 
 - String parsing
-- AST
-- SSA 
+- Abstract Syntax Tree (AST)
+- Static Single Assignment Form (SSA)
+
+: very naive could just use regex on source code
+: most require modeling the source code / program in some abstraction
+: in go, these are typically AST or SSA as they are in the stdlib
 
 * What is an AST?
 
 : abstract syntax tree
 : programmatic representation of source code
+: looks like a tree!
 
 Given a simple program
 
@@ -73,10 +81,14 @@ How can we view the AST?
 
 * What about SSA?
 
+- Every variable is assigned exactly *ONCE*
+- Every variable is defined before usage
+- Existing variables are split in to versions
+
 : static single assignment form
-: intermediate representation
-: every variable is assigned once, and defined before used
-: existing variables split in to versions
+: intermediate representation, maybe familiar with IL from .NET? or Java Bytecode
+: intermediate just means between source code and CPU instructions to some extent
+: sometimes used by compilers, but also used by VM's (.NET / Java, etc.)
 
 * Another simple program
 
