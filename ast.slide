@@ -15,7 +15,7 @@ paul@paultyng.net
 : source code or compiled versions
 : The term lint from 1978 Unix tool at Bell Labs by Stephen Johnson (where Ken Thompson and Rob Pike were)
 : Tools like fmt, vet, fix, lint
-: Other languages: StyleCop/FxCop for .NET C#, PHPStan, checkstyle for java
+: Other languages: StyleCop/FxCop for .NET C#, PHPStan, checkstyle for java, rubocop in ruby
 
 * Why?
 
