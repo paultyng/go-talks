@@ -364,7 +364,7 @@ Too many providers:
 
 : Wire helpfully tells us that we have an unused provider:
 
-  /Users/enocom/go/src/github.com/google/go-cloud/samples/wire/wire.go:24:1:
+  $GOPATH/src/github.com/google/go-cloud/samples/wire/wire.go:24:1:
   inject InitializeEvent: unused provider "NewEventNumber"
   wire: generate failed
 
