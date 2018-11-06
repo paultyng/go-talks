@@ -1,0 +1,373 @@
+Go Dependency Injection
+with Wire
+8 Mar 2018
+Tags: go, wire
+
+Paul Tyng
+Engineering Manager, HashiCorp
+paul@paultyng.net
+@ptyng
+
+* Dependency Injection?!?!?!
+
+: decoupling dependencies such that when a "server" changes, no "client" changes need to be made
+: for example Mysql -> Postgres (of course, sql differences)
+: or in the cloud: s3 -> Google cloud storage -> Azure blob storage
+: authentication different, API probably different, but the main interactions are the same
+: one form of inversion of control
+
+* Dependency Injection in Go
+
+- Explicit dependencies in constructors
+
+  // NewUserStore returns a UserStore that uses cfg and db as dependencies.
+  func NewUserStore(cfg *Config, db *mysql.DB) (*UserStore, error) {...}
+
+- But what happens when you need to modify one?
+- What if the dependencies get more complex?
+
+: what if the postgres implementation of the DB also needs an instance of Config?
+
+* Inversion of Control!?!??!!
+
+.image wire/hollywood.png
+
+: in procedural programs, flow of control is usually in to libraries
+: when you invert that control, a framework may make calls in your code
+: HTTP handlers are a good example:
+: you are not invoking them, the framework is calling the handler
+
+* Wire
+
+- What is [[https://github.com/google/go-cloud/tree/master/wire][Wire]]?
+
+"a dependency injection tool provided with Go Cloud"
+
+- What is [[https://github.com/google/go-cloud][Go Cloud]]?
+
+"A library and tools for open cloud development in Go"
+
+: Go Cloud contains abstractions for things that are common to multiple cloud providers
+: blob storage for example
+: especially useful in the "Serverless" space
+
+- Why is Wire part of Go Cloud?
+
+GCS blob.Bucket requires gcp.HTTPClient which requires google.Credentials
+S3 blob.Bucket requires aws.Config which requires AWS credentials
+
+* Prior Art
+
+- Uber's [[https://github.com/uber-go/dig][dig]]
+- Facebook's [[https://github.com/facebookgo/inject][inject]]
+
+:  both use reflection to do runtime dependency injection
+
+Wire was inspired by Java's [[https://google.github.io/dagger/][Dagger 2]]
+
+* Greeter Program
+
+: A First Pass of Building the Greeter Program
+: Let's create a small program that simulates an event with a greeter greeting guests with a particular message.
+
+* Greeter Program (without Wire)
+
+: To start, we will create three types: 1) a message for a greeter, 2) a greeter who conveys that message, and 3) an event that starts with the greeter greeting guests. In this design, we have three struct types:
+
+Given some types:
+
+  type Message string
+  
+  type Greeter struct {
+    // ... TBD
+  }
+
+  type Event struct {
+    // ... TBD
+  }
+
+* Greeter Program (without Wire)
+
+And some constructors:
+
+: The Message type just wraps a string. For now, we will create a simple initializer that always returns a hard-coded message:
+
+  func NewMessage() Message {
+    return Message("Hi there!")
+  }
+
+: Our Greeter will need reference to the Message. So let's create an initializer for our Greeter as well.
+
+  func NewGreeter(m Message) Greeter {
+    return Greeter{Message: m}
+  }
+
+  type Greeter struct {
+    Message Message // <- adding a Message field
+  }
+
+: In the initializer we assign a Message field to Greeter. Now, we can use the Message when we create a Greet method on Greeter:
+
+  func (g Greeter) Greet() Message {
+    return g.Message
+  }
+
+* Greeter Program (without Wire)
+
+: Next, we need our Event to have a Greeter, so we will create an initializer for it as well.
+
+  func NewEvent(g Greeter) Event {
+    return Event{Greeter: g}
+  }
+
+  type Event struct {
+    Greeter Greeter // <- adding a Greeter field
+  }
+
+: Then we add a method to start the Event:
+
+  func (e Event) Start() {
+    msg := e.Greeter.Greet()
+    fmt.Println(msg)
+  }
+
+: The Start method holds the core of our small application: it tells the greeter to issue a greeting and then prints that message to the screen.
+
+
+* Greeter Program (without Wire)
+
+: Now that we have all the components of our application ready, let's see what it takes to initialize all the components without using Wire. Our main function would look like this:
+
+Initialization:
+
+  func main() {
+    message := NewMessage()
+    greeter := NewGreeter(message)
+    event := NewEvent(greeter)
+
+    event.Start()
+  }
+
+: First we create a message, then we create a greeter with that message, and finally we create an event with that greeter. With all the initialization done, we're ready to start our event.
+
+: We are using the dependency injection design principle. In practice, that means we pass in whatever each component needs. This style of design lends itself to writing easily tested code and makes it easy to swap out one dependency with another.
+
+* Greeter Program (with Wire)
+
+: One downside to dependency injection is the need for so many initialization steps. Let's see how we can use Wire to make the process of initializing our components smoother.
+
+: Let's start by changing our main function to look like this:
+
+Simplified initialization:
+
+  func main() {
+    e := InitializeEvent()
+
+    e.Start()
+  }
+
+* Greeter Program (with Wire)
+
+: Next, in a separate file called wire.go we will define InitializeEvent. This is where things get interesting:
+
+wire.go
+
+  func InitializeEvent() Event {
+    wire.Build(NewEvent, NewGreeter, NewMessage)
+    return Event{}
+  }
+
+: Rather than go through the trouble of initializing each component in turn and passing it into the next one, we instead have a single call to wire.Build passing in the initializers we want to use. In Wire, initializers are known as "providers," functions which provide a particular type. We add a zero value for Event as a return value to satisfy the compiler. Note that even if we add values to Event, Wire will ignore them. In fact, the injector's purpose is to provide information about which providers to use to construct an Event and so we will exclude it from our final binary with a build constraint at the top of the file:
+
+  //+build wireinject
+
+: Note, a build constraint requires a blank, trailing line.
+
+: In Wire parlance, InitializeEvent is an "injector." Now that we have our injector complete, we are ready to use the wire command line tool.
+
+* Greeter Program (with Wire)
+
+Install the tool with:
+
+  go get github.com/google/go-cloud/wire/cmd/wire
+
+: Then in the same directory with the above code, simply run wire. Wire will find the InitializeEvent injector and generate a function whose body is filled out with all the necessary initialization steps. The result will be written to a file named wire_gen.go.
+
+: Let's take a look at what Wire did for us:
+
+* Greeter Program (with Wire)
+
+wire_gen.go
+
+  func InitializeEvent() Event {
+    message := NewMessage()
+    greeter := NewGreeter(message)
+    event := NewEvent(greeter)
+    return event
+  }
+
+: It looks just like what we wrote above! Now this is a simple example with just three components, so writing the initializer by hand isn't too painful. Imagine how useful Wire is for components that are much more complex. When working with Wire, we will commit both wire.go and wire_gen.go to source control.
+
+* Greeter Program (making changes)
+
+Some new features:
+
+: To show a small part of how Wire handles more complex setups, let's refactor our initializer for Event to return an error and see what happens.
+
+  func NewEvent(g Greeter) (Event, error) {
+    if g.Grumpy {
+      return Event{}, errors.New("could not create event: event greeter is grumpy")
+    }
+    return Event{Greeter: g}, nil
+  }
+
+: We'll say that sometimes a Greeter might be grumpy and so we cannot create an Event. The NewGreeter initializer now looks like this:
+
+  func NewGreeter(m Message) Greeter {
+    var grumpy bool
+    if time.Now().Unix()%2 == 0 {
+      grumpy = true
+    }
+    return Greeter{Message: m, Grumpy: grumpy}
+  }
+
+: We have added a Grumpy field to Greeter struct and if the invocation time of the initializer is an even number of seconds since the Unix epoch, we will create a grumpy greeter instead of a friendly one.
+
+* Greeter Program (making changes)
+
+A grumpy greeter's grumpy greeting:
+
+  func (g Greeter) Greet() Message {
+    if g.Grumpy {
+      return Message("Go away!")
+    }
+    return g.Message
+  }
+
+: Now you see how a grumpy Greeter is no good for an Event. So NewEvent may fail. Our main must now take into account that InitializeEvent may in fact fail:
+
+* Greeter Program (making changes)
+
+New initialization with error checking:
+
+  func main() {
+    e, err := InitializeEvent()
+    if err != nil {
+      fmt.Printf("failed to create event: %s\n", err)
+      os.Exit(2)
+    }
+    e.Start()
+  }
+
+* Greeter Program (making changes)
+
+: We also need to update InitializeEvent to add an error type to the return value:
+
+wire.go
+
+  func InitializeEvent() (Event, error) {
+    wire.Build(NewEvent, NewGreeter, NewMessage)
+    return Event{}, nil
+  }
+
+: With the setup complete, we are ready to invoke the wire command again. Note, that after running wire once to produce a wire_gen.go file, we may also use go generate. Having run the command, our wire_gen.go file looks like this:
+
+* Greeter Program (making changes)
+
+wire_gen.go
+
+  func InitializeEvent() (Event, error) {
+    message := NewMessage()
+    greeter := NewGreeter(message)
+    event, err := NewEvent(greeter)
+    if err != nil {
+        return Event{}, err
+    }
+    return event, nil
+  }
+
+: Wire has detected that the NewEvent provider may fail and has done the right thing inside the generated code: it checks the error and returns early if one is present.
+
+* Greeter Program (making changes)
+
+: As another improvement, let's look at how Wire generates code based on the signature of the injector. Presently, we have hard-coded the message inside NewMessage. In practice, it's much nicer to allow callers to change that message however they see fit. So let's change InitializeEvent to look like this:
+
+A new greeting phrase:
+
+  func InitializeEvent(phrase string) (Event, error) {
+    wire.Build(NewEvent, NewGreeter, NewMessage)
+    return Event{}, nil
+  }
+
+: Now InitializeEvent allows callers to pass in the phrase for a Greeter to use. We also add a phrase argument to NewMessage:
+
+  func NewMessage(phrase string) Message {
+    return Message(phrase)
+  }
+
+* Greeter Program (making changes)
+
+: After we run wire again, we will see that the tool has generated an initializer which passes the phrase value as a Message into Greeter. Neat!
+
+wire_gen.go
+
+  func InitializeEvent(phrase string) (Event, error) {
+    message := NewMessage(phrase)
+    greeter := NewGreeter(message)
+    event, err := NewEvent(greeter)
+    if err != nil {
+      return Event{}, err
+    }
+    return event, nil
+  }
+
+: Wire inspects the arguments to the injector, sees that we added a string to the list of arguments (e.g., phrase), and likewise sees that among all the providers, NewMessage takes a string, and so it passes phrase into NewMessage.
+
+* Greeter Program (mistakes and errors)
+
+: Let's also look at what happens when Wire detects mistakes in our code and see how Wire's error messages help us correct any problems.
+
+: For example, when writing our injector InitializeEvent, let's say we forget to add a provider for Greeter. Let's see what happens:
+
+Forgotten providers:
+
+  func InitializeEvent(phrase string) (Event, error) {
+    wire.Build(NewEvent, NewMessage) // woops! We to add a provider for Greeter
+    return Event{}, nil
+  }
+
+: Running wire, we see the following:
+
+  # wrapping the error across lines for readability
+  $GOPATH/src/github.com/google/go-cloud/samples/wire/wire.go:24:1:
+  inject InitializeEvent: no provider found for github.com/google/go-cloud/samples/wire.Greeter
+  (required by provider of github.com/google/go-cloud/samples/wire.Event)
+  wire: generate failed
+  
+: Wire is telling us some useful information: it cannot find a provider for Greeter. Note that the error message prints out the full path to the Greeter type. It's also telling us the line number and injector name where the problem occurred: line 24 inside InitializeEvent. In addition, the error message tells us which provider needs a Greeter. It's the Event type. Once we pass in a provider of Greeter, the problem will be solved.
+
+* Greeter Program (mistakes and errors)
+
+Too many providers:
+
+: Alternatively, what happens if we provide one too many providers to wire.Build?
+
+  func NewEventNumber() int  {
+    return 1
+  }
+
+  func InitializeEvent(phrase string) (Event, error) {
+     // woops! NewEventNumber is unused.
+    wire.Build(NewEvent, NewGreeter, NewMessage, NewEventNumber)
+    return Event{}, nil
+  }
+
+: Wire helpfully tells us that we have an unused provider:
+
+  /Users/enocom/go/src/github.com/google/go-cloud/samples/wire/wire.go:24:1:
+  inject InitializeEvent: unused provider "NewEventNumber"
+  wire: generate failed
+
+: Deleting the unused provider from the call to wire.Build resolves the error.
+
+# * Guestbook Sample
